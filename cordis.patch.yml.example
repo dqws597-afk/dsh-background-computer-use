@@ -1,0 +1,70 @@
+# ============================================================================
+#  dsh-background-computer-use —— DSH 配置片段
+# ============================================================================
+#  用法：把下面 `- insert:` 那段**追加到你的 cordis.patch.yml 末尾**。
+#
+#  文件位置：  ~\.dsh\profiles\<你的 profile 名>\cordis.patch.yml
+#  （DSH 桌面版通常是 desktop，Web 版通常是 web，可看 ~\.dsh\profiles\ 下有哪些）
+#
+#  改完 DSH 会**热重载**，一般 1 分钟内新工具就出现，不需要重启。
+#  想确认加载成功：看进程里有没有 bun.exe（umbriel）和 node.exe（playwright）。
+#
+# ---------------------------------------------------------------------------
+#  ⚠️ 最重要的一条：新增条目必须写成 `- insert:` 列表
+# ---------------------------------------------------------------------------
+#  cordis.patch.yml 是一个「补丁层」，它的顶层条目有两种含义：
+#
+#    - id: xxx          → 覆盖「已经存在的同 id 条目」的配置
+#    - insert: [...]    → 新增条目  ← 只有这一种能加新东西
+#
+#  如果你直接把 `- id: mcp-playwright` 写在顶层，加载器会去找一个叫
+#  mcp-playwright 的已有条目；找不到就**静默忽略**——不报错、不生效，
+#  你会以为配置写对了但工具就是不出现。这个坑我踩过。
+# ============================================================================
+
+- insert:
+    # ------------------------------------------------------------------
+    # 1) Playwright MCP —— 无头浏览器（后台抓网页，不弹窗口）
+    # ------------------------------------------------------------------
+    - id: mcp-playwright
+      name: "@deepseek-ai/dsh-mcp-client"
+      config:
+        serverName: playwright
+        transport: stdio
+        # ↓↓↓ 改成你自己 node.exe 的绝对路径（PowerShell 里跑：(Get-Command node).Source）
+        command: 'C:\Program Files\nodejs\node.exe'
+        args:
+          # ↓↓↓ 改成你自己的路径（一般就是 %APPDATA%\npm\node_modules\@playwright\mcp\cli.js）
+          - 'C:\Users\<用户名>\AppData\Roaming\npm\node_modules\@playwright\mcp\cli.js'
+          - '--headless'
+          # 本机没装 Chrome 时必须指定 msedge，否则会报：
+          #   Chromium distribution 'chrome' is not found at ...
+          # 装了 Chrome 的话可以删掉下面这两行。
+          - '--browser'
+          - 'msedge'
+          # 这行不加，无头浏览器会**直连**，访问不了外网。
+          # 改成你自己的代理端口；不需要代理就整段删掉。
+          - '--proxy-server'
+          - 'http://127.0.0.1:7897'
+
+    # ------------------------------------------------------------------
+    # 2) umbriel —— Windows 后台桌面控制（不抢焦点、不移动鼠标）
+    # ------------------------------------------------------------------
+    - id: mcp-umbriel
+      name: "@deepseek-ai/dsh-mcp-client"
+      config:
+        serverName: umbriel
+        transport: stdio
+        # 注意：~/.bun/bin/umbriel.exe 只是一个 8KB 的**启动壳（shim）**，
+        # 它要求 bun 在 PATH 里，否则进程直接退出、报：
+        #   error: bun is not installed in %PATH%
+        # 所以下面**直接用 bun 去跑它的入口文件**，最稳：
+        command: 'C:\Users\<用户名>\AppData\Roaming\npm\node_modules\bun\bin\bun.exe'
+        args:
+          - 'C:/Users/<用户名>/.bun/install/global/node_modules/umbriel/mcp.ts'
+        env:
+          # 权限档位：
+          #   readonly  → 41 个工具，只能看，不能动
+          #   safe      → 76 个工具，观察 + 无光标控制 + 窗口管理  ← 推荐
+          #   full      → 99 个工具，额外开放注册表 / 进程 / 文件系统等 OS 级操作
+          UMBRIEL_PROFILE: safe
