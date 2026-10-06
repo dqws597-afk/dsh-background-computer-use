@@ -5,6 +5,8 @@
 [![DSH](https://img.shields.io/badge/DSH-0.2.x-4B8BBE.svg)](https://github.com/deepseek-ai/deepseek-harness)
 [![MCP](https://img.shields.io/badge/MCP-stdio-6E4AFF.svg)](https://modelcontextprotocol.io)
 
+[English](./README.en.md) | 简体中文
+
 为 **DeepSeek Harness (DSH)** 增加后台桌面与浏览器操作能力的配置模板。
 
 本模板在 DSH 中接入两个 MCP 服务器，使 Agent 具备操作 Windows 应用与浏览器的能力，并满足以下约束：**不抢占键盘焦点、不移动鼠标指针、不创建可见窗口**。
@@ -233,7 +235,8 @@ DSH 桌面版通常为 `desktop`，Web 版通常为 `web`。可查看 `~\.dsh\pr
 
 | 文件 | 用途 |
 |---|---|
-| `README.md` | 本文档 |
+| `README.md` | 中文文档（本文档） |
+| `README.en.md` | 英文文档 |
 | `LICENSE` | MIT 许可协议 |
 | `install.ps1` | 依赖一键安装脚本 |
 | `cordis.patch.yml.example` | DSH 配置片段，需追加至 `cordis.patch.yml` |
